@@ -20,31 +20,30 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install dependencies
+      - name: Install dependencies & Create SCons Patch
         run: |
           pip install platformio
           cp ./platformio_override_sample.ini ./platformio_override.ini
+          
+          # 创建全局 Python 兼容模块
+          mkdir -p /tmp/compat/SCons/Tool
+          touch /tmp/compat/SCons/__init__.py
+          touch /tmp/compat/SCons/Tool/__init__.py
+          cat << 'EOF' > /tmp/compat/SCons/Tool/FortranCommon.py
+          def Dialectizer(*args, **kwargs): pass
+          def add_f77_to_env(*args, **kwargs): pass
+          def add_f90_to_env(*args, **kwargs): pass
+          def add_f95_to_env(*args, **kwargs): pass
+          def add_fortran_to_env(*args, **kwargs): pass
+          EOF
       - name: Add SHA to footer
         run: |
           COMMIT_SHA_LONG=$(git rev-parse --short HEAD || echo "")
           SHA=${COMMIT_SHA_LONG::7}
           sed -i -e "s/TASMOTA_SHA_SHORT/TASMOTA_SHA_SHORT $SHA-/g" ./tasmota/include/tasmota_version.h
-      - name: Pre-install Platform and Patch SCons
-        run: |
-          # 预先下载工具包并修补缺失的 FortranCommon 模块
-          pio pkg install --global --platform "https://github.com/tasmota/platform-espressif8266/releases/download/2026.04.00/platform-espressif8266.zip" || true
-          python3 -c "
-          import os, glob
-          stub = 'def Dialectizer(*args, **kwargs): pass\ndef add_f77_to_env(*args, **kwargs): pass\ndef add_f90_to_env(*args, **kwargs): pass\ndef add_f95_to_env(*args, **kwargs): pass\ndef add_fortran_to_env(*args, **kwargs): pass\n'
-          for root, dirs, files in os.walk(os.path.expanduser('~/.platformio')):
-              if os.path.basename(root) == 'Tool':
-                  target = os.path.join(root, 'FortranCommon.py')
-                  with open(target, 'w') as f:
-                      f.write(stub)
-                  print(f'Patched: {target}')
-          "
       - name: Run PlatformIO
         env:
+          PYTHONPATH: /tmp/compat
           PYTHONIOENCODING: utf-8
           PYTHONUTF8: '1'
         run: platformio run -e tasmota-CN
