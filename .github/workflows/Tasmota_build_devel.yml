@@ -19,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.13'
+          python-version: '3.11'
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
@@ -34,13 +34,4 @@ jobs:
           COMMIT_SHA_LONG=$(git rev-parse --short HEAD || echo "")
           SHA=${COMMIT_SHA_LONG::7}
           sed -i -e "s/TASMOTA_SHA_SHORT/TASMOTA_SHA_SHORT $SHA-/g" ./tasmota/include/tasmota_version.h
-      - name: Run PlatformIO
-        env:
-          PYTHONIOENCODING: utf-8
-          PYTHONUTF8: '1'
-        run: platformio run -e tasmota-CN
-      - name: Upload firmware artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: tasmota-CN
-          path: ./build_output
+      - name: Run Platform
