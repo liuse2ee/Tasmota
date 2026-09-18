@@ -24,7 +24,7 @@ jobs:
         run: |
           pip install platformio
           
-          # 创建完整的编译期内存补丁
+          # 创建完整的 SCons 兼容补丁
           cat << 'EOF' > patch_scons.py
           import sys, types
           try:
@@ -40,6 +40,9 @@ jobs:
 
           m = types.ModuleType("SCons.Tool.FortranCommon")
           m.Dialectizer = Dummy
+          m.isfortran = lambda *a, **k: False
+          m.shfortranEmitter = lambda *a, **k: a
+          m.fortranEmitter = lambda *a, **k: a
           m.add_f77_to_env = lambda *a, **k: None
           m.add_f90_to_env = lambda *a, **k: None
           m.add_f95_to_env = lambda *a, **k: None
@@ -47,7 +50,7 @@ jobs:
           
           sys.modules["SCons.Tool.FortranCommon"] = m
           SCons.Tool.FortranCommon = m
-          print(">>> SCons.Tool.FortranCommon successfully attached! <<<")
+          print(">>> SCons.Tool.FortranCommon (with isfortran) successfully attached! <<<")
           EOF
 
           # 创建干净的 override 配置
