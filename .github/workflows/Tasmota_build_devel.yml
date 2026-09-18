@@ -12,12 +12,6 @@ concurrency:
 jobs:
   build-esp8266:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        variant:
-          - tasmota-CN
-          - tasmota
-          - tasmota-minimal
     steps:
       - uses: actions/checkout@v6
         with:
@@ -34,6 +28,7 @@ jobs:
       - name: Install dependencies
         run: |
           uv pip install --system pioarduino
+          cp ./platformio_override_sample.ini ./platformio_override.ini
       - name: Add SHA to footer
         run: |
           COMMIT_SHA_LONG=$(git rev-parse --short HEAD || echo "")
@@ -43,9 +38,9 @@ jobs:
         env:
           PYTHONIOENCODING: utf-8
           PYTHONUTF8: '1'
-        run: platformio run -e ${{ matrix.variant }}
+        run: platformio run -e tasmota-CN
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.variant }}
+          name: tasmota-CN
           path: ./build_output
