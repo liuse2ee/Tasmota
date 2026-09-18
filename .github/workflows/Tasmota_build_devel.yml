@@ -24,24 +24,33 @@ jobs:
         run: |
           pip install platformio
           
-          # 创建编译期内存补丁
+          # 创建完整的编译期内存补丁
           cat << 'EOF' > patch_scons.py
           import sys, types
           try:
               Import("env")
           except:
               pass
+          import SCons.Tool
+          
+          class Dummy:
+              def __init__(self, *args, **kwargs): pass
+              def __call__(self, *args, **kwargs): return self
+              def __getattr__(self, name): return lambda *args, **kwargs: None
+
           m = types.ModuleType("SCons.Tool.FortranCommon")
-          m.Dialectizer = lambda *a, **k: None
+          m.Dialectizer = Dummy
           m.add_f77_to_env = lambda *a, **k: None
           m.add_f90_to_env = lambda *a, **k: None
           m.add_f95_to_env = lambda *a, **k: None
           m.add_fortran_to_env = lambda *a, **k: None
+          
           sys.modules["SCons.Tool.FortranCommon"] = m
-          print(">>> SCons.Tool.FortranCommon dummy module injected successfully! <<<")
+          SCons.Tool.FortranCommon = m
+          print(">>> SCons.Tool.FortranCommon successfully attached! <<<")
           EOF
 
-          # 直接创建干净的 override 配置（避免重复）
+          # 创建干净的 override 配置
           cat << 'EOF' > platformio_override.ini
           [env]
           extra_scripts = pre:patch_scons.py
