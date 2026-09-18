@@ -43,7 +43,7 @@
 #define STA_SSID1         "HWF2"
 
 #undef  STA_PASS1
-#define STA_PASS1         "wxhxgyfm"     // [Password1] Wifi password
+#define STA_PASS1         "wxhxgyfm"
 
 /*
 Examples :
