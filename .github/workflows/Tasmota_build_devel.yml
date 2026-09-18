@@ -24,13 +24,25 @@ jobs:
         run: |
           pip install platformio
           cp ./platformio_override_sample.ini ./platformio_override.ini
-          # 锁定 SCons 编译工具版本，防止自动下载不兼容的 4.11
-          echo -e "\n[env]\nplatform_packages =\n    platformio/tool-scons @ ~4.40801.0\n" >> ./platformio_override.ini
       - name: Add SHA to footer
         run: |
           COMMIT_SHA_LONG=$(git rev-parse --short HEAD || echo "")
           SHA=${COMMIT_SHA_LONG::7}
           sed -i -e "s/TASMOTA_SHA_SHORT/TASMOTA_SHA_SHORT $SHA-/g" ./tasmota/include/tasmota_version.h
+      - name: Pre-install Platform and Patch SCons
+        run: |
+          # 预先下载工具包并修补缺失的 FortranCommon 模块
+          pio pkg install --global --platform "https://github.com/tasmota/platform-espressif8266/releases/download/2026.04.00/platform-espressif8266.zip" || true
+          python3 -c "
+          import os, glob
+          stub = 'def Dialectizer(*args, **kwargs): pass\ndef add_f77_to_env(*args, **kwargs): pass\ndef add_f90_to_env(*args, **kwargs): pass\ndef add_f95_to_env(*args, **kwargs): pass\ndef add_fortran_to_env(*args, **kwargs): pass\n'
+          for root, dirs, files in os.walk(os.path.expanduser('~/.platformio')):
+              if os.path.basename(root) == 'Tool':
+                  target = os.path.join(root, 'FortranCommon.py')
+                  with open(target, 'w') as f:
+                      f.write(stub)
+                  print(f'Patched: {target}')
+          "
       - name: Run PlatformIO
         env:
           PYTHONIOENCODING: utf-8
