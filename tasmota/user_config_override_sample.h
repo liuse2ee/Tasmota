@@ -34,6 +34,16 @@
  *   - All parameters can be persistent changed online using commands via MQTT, WebConsole or Serial.
 \*****************************************************************************************************/
 
+#define MY_LANGUAGE            zh_CN
+#define USE_SCRIPT
+#undef USE_RULES
+
+#undef  STA_SSID1
+#define STA_SSID1         "HWF2"             // [Ssid1] Wifi SSID
+
+#undef  STA_PASS1
+#define STA_PASS1         "wxhxgyfm"     // [Password1] Wifi password
+
 /*
 Examples :
 
