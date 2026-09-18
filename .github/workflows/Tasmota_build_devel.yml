@@ -1,7 +1,7 @@
 name: Build_development
 
 on:
-  workflow_dispatch:      # 支持手动一键运行
+  workflow_dispatch:
   push:
     branches: [ development ]
 
@@ -34,4 +34,13 @@ jobs:
           COMMIT_SHA_LONG=$(git rev-parse --short HEAD || echo "")
           SHA=${COMMIT_SHA_LONG::7}
           sed -i -e "s/TASMOTA_SHA_SHORT/TASMOTA_SHA_SHORT $SHA-/g" ./tasmota/include/tasmota_version.h
-      - name: Run Platform
+      - name: Run PlatformIO
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: platformio run -e tasmota-CN
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tasmota-CN
+          path: ./build_output/firmware/tasmota-CN.bin.gz
