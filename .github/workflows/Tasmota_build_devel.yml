@@ -24,6 +24,8 @@ jobs:
         run: |
           pip install platformio
           cp ./platformio_override_sample.ini ./platformio_override.ini
+          # 锁定 SCons 编译工具版本，防止自动下载不兼容的 4.11
+          echo -e "\n[env]\nplatform_packages =\n    platformio/tool-scons @ ~4.40801.0\n" >> ./platformio_override.ini
       - name: Add SHA to footer
         run: |
           COMMIT_SHA_LONG=$(git rev-parse --short HEAD || echo "")
@@ -41,3 +43,4 @@ jobs:
           path: |
             build_output/firmware/*.bin.gz
             .pio/build/tasmota-CN/*.bin.gz
+            .pio/build/tasmota-CN/*.bin
