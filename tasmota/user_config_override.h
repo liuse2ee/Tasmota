@@ -40,7 +40,7 @@
 #undef USE_RULES
 
 #undef  STA_SSID1
-#define STA_SSID1         "HWF2"             // [Ssid1] Wifi SSID
+#define STA_SSID1         "HWF2"
 
 #undef  STA_PASS1
 #define STA_PASS1         "wxhxgyfm"     // [Password1] Wifi password
