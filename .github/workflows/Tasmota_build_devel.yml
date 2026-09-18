@@ -24,7 +24,7 @@ jobs:
         run: |
           pip install platformio
           
-          # 创建完整的 SCons 兼容补丁
+          # 创建编译期内存补丁
           cat << 'EOF' > patch_scons.py
           import sys, types
           try:
@@ -50,12 +50,12 @@ jobs:
           
           sys.modules["SCons.Tool.FortranCommon"] = m
           SCons.Tool.FortranCommon = m
-          print(">>> SCons.Tool.FortranCommon (with isfortran) successfully attached! <<<")
           EOF
 
-          # 创建干净的 override 配置
+          # 补齐丢失的 flashmode 宏定义
           cat << 'EOF' > platformio_override.ini
           [env]
+          build_flags = -DCONFIG_TASMOTA_FLASHMODE_DOUT
           extra_scripts = pre:patch_scons.py
           EOF
 
