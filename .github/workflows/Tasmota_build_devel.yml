@@ -20,12 +20,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install dependencies & Create In-Memory Patch
+      - name: Install dependencies & Create Patch
         run: |
           pip install platformio
-          cp ./platformio_override_sample.ini ./platformio_override.ini
           
-          # 创建编译期内存补丁脚本
+          # 创建编译期内存补丁
           cat << 'EOF' > patch_scons.py
           import sys, types
           try:
@@ -42,8 +41,11 @@ jobs:
           print(">>> SCons.Tool.FortranCommon dummy module injected successfully! <<<")
           EOF
 
-          # 将补丁加入 PlatformIO 构建流程
-          echo -e "\n[env]\nextra_scripts = pre:patch_scons.py\n" >> ./platformio_override.ini
+          # 直接创建干净的 override 配置（避免重复）
+          cat << 'EOF' > platformio_override.ini
+          [env]
+          extra_scripts = pre:patch_scons.py
+          EOF
 
       - name: Add SHA to footer
         run: |
